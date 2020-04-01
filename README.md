@@ -7,3 +7,10 @@ This package makes the native libs required for Wine's Faudio support, not exter
 ### You can use your own faudio patches by putting them in the same folder as the PKGBUILD and giving them the .myfaudiopatch extension.
 
 ### You can also revert faudio patches by putting them in the same folder as the PKGBUILD and giving them the .myfaudiorevert extension.
+
+
+```
+git clone https://github.com/Frogging-Family/faudio-git.git
+cd faudio-git
+makepkg -si
+```
