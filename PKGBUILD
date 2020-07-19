@@ -33,7 +33,7 @@ if [ "$_lib32" == "true" ]; then
   pkgname=("${pkgname[@]}" "lib32-${_pkgname}-git")
 fi
 
-pkgver=20.06.r0.ge00e45e
+pkgver=20.07.r3.gd0a90be
 pkgrel=1
 pkgdesc="Accuracy-focused XAudio reimplementation for open platforms"
 arch=('i686' 'x86_64')
@@ -46,13 +46,15 @@ if [ "$_lib32" == "true" ]; then
   depends=("${depends[@]}" lib32-sdl2 lib32-ffmpeg)
 fi
 
+makedepends=('git' 'cmake')
+
 if [ -n ${_faudio_commit} ]; then
-  _faudio_commit="#commit=${_faudio_commit}"
+  source=(git+https://github.com/FNA-XNA/FAudio.git${_faudio_commit})
+else
+  source=(git+https://github.com/FNA-XNA/FAudio.git)
 fi
 
-makedepends=('git' 'cmake')
-source=("git+https://github.com/FNA-XNA/FAudio.git${_faudio_commit}"
-        'force-lib32-sdl2.patch'
+source+=('force-lib32-sdl2.patch'
         'force-lib32-sdl2-legacy.patch')
 sha256sums=('SKIP'
             '74a3432a09b1fa70cda254af5b0e04dbdb72f7f082dde7f625a477cacd634975'
