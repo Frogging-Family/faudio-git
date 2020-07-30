@@ -24,6 +24,9 @@ _NUKR="true" # Cleanups
 _lib32="true" # Enable/Disable lib32 package building
 _faudio_commit="" # To target a specific version of faudio based on commit id - Leave empty to use latest HEAD
 
+# xWMA impl - set to "ffmpeg" for legacy xWMA support on 7f52bfb66b73cca2522537f45977886958a06324 or older
+_xWMA_impl="gst"
+
 _pkgname=('faudio-tkg')
 _gitname=FAudio
 pkgname=("${_pkgname}-git" )
@@ -33,20 +36,32 @@ if [ "$_lib32" == "true" ]; then
   pkgname=("${pkgname[@]}" "lib32-${_pkgname}-git")
 fi
 
-pkgver=20.07.r3.gd0a90be
+pkgver=20.07.r11.g74b38f7
 pkgrel=1
 pkgdesc="Accuracy-focused XAudio reimplementation for open platforms"
 arch=('i686' 'x86_64')
 url='https://github.com/FNA-XNA/FAudio'
 license=('Zlib')
-depends=('sdl2' 'ffmpeg')
 
-# lib32
+makedepends=('git' 'cmake' 'sdl2')
 if [ "$_lib32" == "true" ]; then
-  depends=("${depends[@]}" lib32-sdl2 lib32-ffmpeg)
+  makedepends+=(lib32-sdl2)
 fi
 
-makedepends=('git' 'cmake')
+# xWMA support
+if [ "$_xWMA_impl" = "ffmpeg" ]; then
+  _xWMA_support="-DFFMPEG=ON"
+  makedepends+=(ffmpeg)
+  if [ "$_lib32" == "true" ]; then
+    makedepends+=(lib32-ffmpeg)
+  fi
+else
+  _xWMA_support="-DGSTREAMER=ON"
+  makedepends+=(gst-plugins-base-libs)
+  if [ "$_lib32" == "true" ]; then
+    makedepends+=(lib32-gst-plugins-base-libs)
+  fi
+fi
 
 if [ -n ${_faudio_commit} ]; then
   source=(git+https://github.com/FNA-XNA/FAudio.git${_faudio_commit})
@@ -146,7 +161,7 @@ build() {
     -DCMAKE_INSTALL_PREFIX="${pkgdir}/usr" \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DCMAKE_INSTALL_INCLUDEDIR=include/FAudio \
-    -DFFMPEG=ON
+    "$_xWMA_support"
   make
 
   # lib32
@@ -165,14 +180,16 @@ build() {
     export CC="gcc -m32 -mstackrealign"
     export CXX="g++ -m32 -mstackrealign"
     export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"
+    if [ "$_xWMA_impl" = "ffmpeg" ]; then
+      _xWMA_support="-DFFMPEG=ON -DFFmpeg_LIBRARY_DIRS=/usr/lib32"
+    fi
 
     cmake .. \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX="${pkgdir}/../lib32-${pkgname}/usr" \
       -DCMAKE_INSTALL_LIBDIR=lib32 \
       -DCMAKE_INSTALL_INCLUDEDIR=include/FAudio \
-      -DFFMPEG=ON \
-      -DFFmpeg_LIBRARY_DIRS=/usr/lib32
+      "$_xWMA_support"
     make
   fi
 }
@@ -180,6 +197,13 @@ build() {
 package_faudio-tkg-git() {
 provides=("faudio" "faudio-git")
 conflicts=("faudio" "faudio-git")
+depends=('sdl2')
+if ( cd "$srcdir/${_gitname}" && git merge-base --is-ancestor 7f52bfb66b73cca2522537f45977886958a06324 HEAD ); then
+  depends+=(gst-plugins-base-libs)
+else
+  depends+=(ffmpeg)
+fi
+
   cd "$srcdir/64/build"
 
   cat>faudio.pc<<'EOF'
@@ -204,7 +228,12 @@ EOF
 package_lib32-faudio-tkg-git() {
 provides=("lib32-faudio" "lib32-faudio-git")
 conflicts=("lib32-faudio" "lib32-faudio-git")
-depends=("${pkgname}")
+depends=("${pkgname}" lib32-sdl2)
+if ( cd "$srcdir/${_gitname}" && git merge-base --is-ancestor 7f52bfb66b73cca2522537f45977886958a06324 HEAD ); then
+  depends+=(lib32-gst-plugins-base-libs)
+else
+  depends+=(lib32-ffmpeg)
+fi
 
   cd "$srcdir/32/build"
 
