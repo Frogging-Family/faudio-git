@@ -36,16 +36,16 @@ if [ "$_lib32" == "true" ]; then
   pkgname=("${pkgname[@]}" "lib32-${_pkgname}-git")
 fi
 
-pkgver=20.07.r11.g74b38f7
+pkgver=20.09.r11.g2121d44
 pkgrel=1
 pkgdesc="Accuracy-focused XAudio reimplementation for open platforms"
 arch=('i686' 'x86_64')
 url='https://github.com/FNA-XNA/FAudio'
 license=('Zlib')
 
-makedepends=('git' 'cmake' 'sdl2')
+makedepends=('git' 'cmake' 'sdl2' 'dbus')
 if [ "$_lib32" == "true" ]; then
-  makedepends+=(lib32-sdl2)
+  makedepends+=(lib32-sdl2 lib32-dbus)
 fi
 
 # xWMA support
