@@ -36,7 +36,7 @@ if [ "$_lib32" == "true" ]; then
   pkgname=("${pkgname[@]}" "lib32-${_pkgname}-git")
 fi
 
-pkgver=20.09.r11.g2121d44
+pkgver=21.04.r0.g398ca11
 pkgrel=1
 pkgdesc="Accuracy-focused XAudio reimplementation for open platforms"
 arch=('i686' 'x86_64')
@@ -158,7 +158,7 @@ build() {
 
   cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX="${pkgdir}/usr" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DCMAKE_INSTALL_INCLUDEDIR=include/FAudio \
     "$_xWMA_support"
@@ -186,7 +186,7 @@ build() {
 
     cmake .. \
       -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_INSTALL_PREFIX="${pkgdir}/../lib32-${pkgname}/usr" \
+      -DCMAKE_INSTALL_PREFIX=/usr \
       -DCMAKE_INSTALL_LIBDIR=lib32 \
       -DCMAKE_INSTALL_INCLUDEDIR=include/FAudio \
       "$_xWMA_support"
@@ -219,7 +219,7 @@ Libs: -L${libdir} -lFAudio
 Cflags: -I${includedir}
 EOF
 
-  make install
+  make install DESTDIR="${pkgdir}"
 
   install -D -m644 -t "${pkgdir}/usr/share/licenses/faudio" ../LICENSE
   install -D -m644 -t "${pkgdir}/usr/lib/pkgconfig" faudio.pc
@@ -250,7 +250,7 @@ Libs: -L${libdir} -lFAudio
 Cflags: -I${includedir}
 EOF
 
-  make install
+  make install DESTDIR="${pkgdir}"
 
   rm -r "${pkgdir}/usr/include"
 
