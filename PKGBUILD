@@ -63,8 +63,9 @@ else
   fi
 fi
 
-if [ -n ${_faudio_commit} ]; then
-  source=(git+https://github.com/FNA-XNA/FAudio.git${_faudio_commit})
+if [ -n "${_faudio_commit}" ]; then
+  _faudio_commit="#commit=${_faudio_commit}"
+  source=("git+https://github.com/FNA-XNA/FAudio.git${_faudio_commit}")
 else
   source=(git+https://github.com/FNA-XNA/FAudio.git)
 fi
